@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ServiceSocket</string>
+    <string name="buttonOn">START SERVICE</string>
+    <string name="buttonOff">STOP SERVICE</string>
+</resources>
