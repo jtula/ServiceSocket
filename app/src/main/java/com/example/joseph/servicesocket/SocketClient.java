@@ -1,18 +1,12 @@
-package com.example.joseph.servicesocket; /**
- * Created by joseph on 20/03/18.
- */
+package com.example.joseph.servicesocket;
 
-import android.os.Handler;
 import android.util.Log;
-
-import com.example.joseph.servicesocket.MainActivity;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.InetAddress;
 import java.net.Socket;
 
 
@@ -67,14 +61,11 @@ public class SocketClient {
 
                     incomingMessage = in.readLine();
 
-                    if (incomingMessage != null && listener != null) {
+                    if (incomingMessage != null && listener != null)
                         listener.callbackMessageReceiver(incomingMessage);
-                    }
 
                     incomingMessage = null;
                 }
-
-                Log.d(TAG, "Received Message: " + incomingMessage);
 
             } catch (Exception e) {
                 Log.d(TAG, "Error", e);
@@ -98,6 +89,7 @@ public class SocketClient {
     }
 
 
+
     /**
      * Callback Interface for sending received messages to 'onPublishProgress' method in AsyncTask.
      *
@@ -107,7 +99,7 @@ public class SocketClient {
          * Method overriden in AsyncTask 'doInBackground' method while creating the com.example.joseph.servicesocket.SocketClient object.
          * @param message Received message from server app.
          */
-        public void callbackMessageReceiver(String message);
+        void callbackMessageReceiver(String message);
     }
 }
 

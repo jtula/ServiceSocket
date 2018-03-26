@@ -1,5 +1,9 @@
 <resources>
-    <string name="app_name">ServiceSocket</string>
+    <string name="app_name">Service Socket</string>
     <string name="buttonOn">START SERVICE</string>
     <string name="buttonOff">STOP SERVICE</string>
+    <string name="server_ip">Server Ip</string>
+    <string name="server_port">Server Port</string>
+    <string name="package_name">Package name</string>
+    <string name="socket_message">Socket message</string>
 </resources>
