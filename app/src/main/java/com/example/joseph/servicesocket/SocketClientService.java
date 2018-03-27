@@ -7,8 +7,11 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.util.concurrent.TimeUnit;
+
 public class SocketClientService extends Service {
 
+    private static final String TAG = "SocketService";
     SocketClientTask socketClientTask;
 
     @Override
@@ -22,8 +25,10 @@ public class SocketClientService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         String serverIp = (String) intent.getExtras().get("serverIp");
+        String packageName = (String) intent.getExtras().get("packageName");
+        String socketMsg = (String) intent.getExtras().get("socketMsg");
         int serverPort = Integer.parseInt((String) intent.getExtras().get("serverPort"));
-        socketClientTask = new SocketClientTask(serverIp, serverPort );
+        socketClientTask = new SocketClientTask(serverIp, serverPort, packageName, socketMsg );
         socketClientTask.execute();
 
         return super.onStartCommand(intent, flags, startId);
@@ -32,10 +37,17 @@ public class SocketClientService extends Service {
 
     @Override
     public void onDestroy() {
+
         super.onDestroy();
+
         Toast.makeText(this, "Service destroyed!", Toast.LENGTH_SHORT).show();
+
+        SocketClient tcpClient = socketClientTask.getTCPClient();
+
+        if (tcpClient.isRunning())
+            tcpClient.stopClient();
+
         socketClientTask.cancel(true);
-        socketClientTask = null;
     }
 
 
@@ -49,26 +61,30 @@ public class SocketClientService extends Service {
     private class SocketClientTask extends AsyncTask<String, String, SocketClient> {
 
         private SocketClient tcpClient;
-        private String serverIp;
+        private String serverIp, packageName, socketMsg;
         private int serverPort;
 
 
-        public SocketClientTask(String serverIp, int serverPort) {
+        public SocketClientTask(String serverIp, int serverPort, String packageName, String socketMsg) {
             this.serverIp = serverIp;
             this.serverPort = serverPort;
+            this.packageName = packageName;
+            this.socketMsg = socketMsg;
         }
 
 
         @Override
         protected SocketClient doInBackground(String... params) {
             try {
-                tcpClient = new SocketClient(serverIp, serverPort, new SocketClient.MessageCallback() {
+                tcpClient = new SocketClient(serverIp,
+                                             serverPort,
+                                             new SocketClient.MessageCallback() {
                     @Override
                     public void callbackMessageReceiver(String message) {
                         try {
                             publishProgress(message);
                             if (message != null) {
-                                Log.d("Socket Message: ", message);
+                                Log.d(TAG, message);
                             }
                         } catch (Exception e) {
                            e.printStackTrace();
@@ -81,23 +97,29 @@ public class SocketClientService extends Service {
             }
 
             tcpClient.run();
-
             return null;
         }
-
 
         @Override
         protected void onProgressUpdate(String... values) {
 
             super.onProgressUpdate(values);
+
+            if (values[values.length-1].equals(socketMsg)) {
+                Intent launchIntent = getPackageManager().getLaunchIntentForPackage(packageName);
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(launchIntent);
+            }
         }
 
 
         @Override
         protected void onCancelled() {
-            tcpClient.sendMessage("Closing connection..");
-            tcpClient.stopClient();
             super.onCancelled();
+        }
+
+        public SocketClient getTCPClient() {
+            return tcpClient;
         }
     }
 }
